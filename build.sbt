@@ -9,4 +9,6 @@ val scafi_version = "0.3.2"
 
 val scafi_core  =  "it.unibo.apice.scafiteam" %% "scafi-core" % scafi_version
 val scafi_simulator  =  "it.unibo.apice.scafiteam" %% "scafi-simulator" % scafi_version
-libraryDependencies ++= Seq(scafi_core, scafi_simulator)
+val scafi_simulator_gui  =  "it.unibo.apice.scafiteam" %% "scafi-simulator-gui" % scafi_version
+
+libraryDependencies ++= Seq(scafi_core, scafi_simulator, scafi_simulator_gui)
