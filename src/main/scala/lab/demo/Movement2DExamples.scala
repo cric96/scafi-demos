@@ -8,5 +8,5 @@ class ConstantMovement extends Movement2DProgram {
 }
 
 class BasicMovement extends Movement2DProgram with Movement2D {
-  override def movementLogic(): Velocity = clockwiseRotation((0.0, 0.0))
+  override def movementLogic(): Velocity = clockwiseRotation((0.5, 0.5))
 }
