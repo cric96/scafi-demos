@@ -1,7 +1,6 @@
 package lab.simulation
 
-import it.unibo.scafi.simulation.gui.{Launcher, Settings}
-
+import it.unibo.scafi.simulation.frontend.{Launcher, Settings}
 object GraphicalSimulation extends Launcher {
   Settings.Sim_ProgramClass = "lab.demo.Program1"
   Settings.ShowConfigPanel = false
