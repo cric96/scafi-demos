@@ -1,9 +1,21 @@
 package lab.demo
 
 import it.unibo.scafi.incarnations.BasicAbstractIncarnation
+import it.unibo.scafi.simulation.frontend.{Launcher, Settings}
 
 object Incarnation extends BasicAbstractIncarnation
-import Incarnation._ //import all stuff from an incarnation
+import lab.demo.Incarnation._ //import all stuff from an incarnation
+
+object Simulation extends Launcher {
+  val program = "lab.demo.Main1"
+  val radius = 0.3
+  val nodes = 40
+  Settings.Sim_ProgramClass = program
+  Settings.ShowConfigPanel = false
+  Settings.Sim_NbrRadius = radius
+  Settings.Sim_NumNodes = nodes
+  launch()
+}
 
 abstract class AggregateProgramSkeleton extends AggregateProgram with StandardSensors {
   def sense1 = sense[Boolean]("sens1")
