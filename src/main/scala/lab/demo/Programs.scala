@@ -5,7 +5,7 @@ import it.unibo.scafi.incarnations.BasicAbstractIncarnation
 object Incarnation extends BasicAbstractIncarnation
 import Incarnation._ //import all stuff from an incarnation
 
-abstract class AggregateProgramSkeleton extends AggregateProgram with StandardSensors {
+trait AggregateProgramSkeleton extends AggregateProgram with StandardSensors {
   def sense1 = sense[Boolean]("sens1")
   def sense2 = sense[Boolean]("sens2")
   def sense3 = sense[Boolean]("sens3")

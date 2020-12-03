@@ -2,8 +2,9 @@ package lab.lib.movement
 
 import it.unibo.scafi.space.Point3D
 /**
- *
+ * flocking behaviour from Craig Reynolds (https://www.red3d.com/cwr/index.html)
  * implementation taken by https://gamedevelopment.tutsplus.com/tutorials/3-simple-rules-of-flocking-behaviors-alignment-cohesion-and-separation--gamedev-3444
+ * other link : https://www.red3d.com/cwr/boids/
  */
 trait Flock_Lib {
   self : MovementLibrary.Subcomponent =>
