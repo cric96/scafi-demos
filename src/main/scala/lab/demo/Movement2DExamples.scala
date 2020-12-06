@@ -202,23 +202,8 @@ class LeaderStrategy extends Movement2DProgram with Movement2D with FlockLib wit
 class FindFood extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
   with SensorFacade with BlockC with BlockS with BlockT {
   def isFood : Boolean = sense3
-
-  def goTo(destination : P) : Velocity = withSeparation(goToPoint(destination) * 0.5)(10.0)
-
   override def movementBody(): Movement2DIncarnation.Velocity = {
-    def droneBehaviour() : Velocity = {
-      val (foodFound, foodPosition) = rep[(Boolean, P)]((false, currentPosition())){
-        case (found, position) => foldhoodPlus((found, position)) {
-          case (acc @ (_, _), neigh @ (neighFound, _)) => mux(neighFound) { neigh } { acc }
-        } {
-          (nbr(isFood), nbr(currentPosition()))
-        }
-      }
-      val globalFoodPosition = { broadcast(foodFound, foodPosition) }
-      val foundInAnyPlace = { broadcast(foodFound, foodFound) }
-      mux(foundInAnyPlace) { goTo(globalFoodPosition) } { standStill }
-    }
-
+    def droneBehaviour() : Velocity = Velocity.Zero //TODO
     val droneResult = droneBehaviour()
     branch(isFood) {
       standStill
@@ -237,37 +222,11 @@ class FindFood extends Movement2DProgram with Movement2D with FlockLib with Adva
 class FindFoodAndLeave extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
   with SensorFacade with BlockC with BlockS with BlockT {
   def isFood : Boolean = sense3
-  private val thr = 25.0
-  private val eatTime = 10
-  def seek(destination : P) : Velocity = withSeparation(goToPoint(destination) * 0.5)(10.0)
-  def flee(destination : P) : Velocity = withSeparation(goToPoint(-destination) * 0.5)(separationDistance = 10.0)
+  private val thr = 25.0 //the distance needed to "eat" the food
+  private val eatTime = 10 //the time needed to consume the food
 
   override def movementBody(): Movement2DIncarnation.Velocity = {
-    def droneBehaviour(): Velocity = {
-      val (foodFound, foodPosition) = rep[(Boolean, P)]((false, currentPosition())){
-        case (found, position) => foldhood((found, position)) {
-          case (acc @ (_, _), neigh @ (neighFound, _)) => mux(neighFound) { neigh } { acc }
-        } {
-          (nbr(isFood), nbr(currentPosition()))
-        }
-      }
-
-      val globalFoodPosition = { broadcast(foodFound, foodPosition) }
-      val foundInAnyPlace = { broadcast(foodFound, foodFound) }
-      val goal =  seek(globalFoodPosition)
-      val awayFromGoal = flee(globalFoodPosition)
-
-      mux(foundInAnyPlace) {
-        val reached = rep(false)(v => (v || currentPosition().distance(globalFoodPosition) < thr) && foundInAnyPlace)
-        branch(reached) {
-          mux(T(eatTime) == 0) { awayFromGoal } { goal }
-        } {
-          goal
-        }
-      } {
-        standStill
-      }
-    }
+    def droneBehaviour(): Velocity = Velocity.Zero //TODO
     val droneResult = droneBehaviour()
     branch(isFood) {
       standStill
@@ -287,29 +246,10 @@ class FindFoodAndLeave extends Movement2DProgram with Movement2D with FlockLib w
  */
 class RescueDrone extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
   with SensorFacade with BlockC with BlockS with BlockT {
-  def isBase = sense3
-  def isInjured = sense2
-
-  val thr = 25.0
-  val eatTime = 10
-  val grain = 10
-
-  def seek(destination : P) : Velocity = withSeparation(goToPoint(destination) * 0.5)(10.0)
-  def flee(destination : P) : Velocity = withSeparation(goToPoint(-destination) * 0.5)(separationDistance = 10.0)
-
+  def isBase : Boolean = sense3
+  def isInjured : Boolean = sense2
   override def movementBody(): Movement2DIncarnation.Velocity = {
-    def droneBehaviour(): Velocity = {
-      val leader = branch(isBase) { S(grain, nbrRange) } { false }
-      val potential = distanceTo(leader, nbrRange)
-      val collect = C[Double, P](potential, (acc, other) => mux(positionOrdering.gt(acc, other)) { acc } { other }, mux(isInjured) { currentPosition()} { Zero }, Zero )
-      val injuredPosition = broadcast(leader, collect)
-      mux(injuredPosition.isZero) {
-        standStill
-      } {
-        seek(injuredPosition)
-      }
-    }
-
+    def droneBehaviour(): Velocity = Velocity.Zero //TODO
     val droneResult = droneBehaviour()
     branch(isBase || isInjured) {
       standStill
