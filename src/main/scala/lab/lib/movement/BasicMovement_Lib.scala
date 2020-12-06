@@ -27,7 +27,7 @@ trait BasicMovement_Lib {
      *  X                      X
      *     O     =clockwise=>  0
      *        Y                Y
-     * @param center
+     * @param center position the center of the rotation (O in the example above)
      * @return the velocity that rotates the node accordingly
      */
     def clockwiseRotation(center : P) : Velocity = {
@@ -35,11 +35,11 @@ trait BasicMovement_Lib {
       Point2D(-centerVector.y, centerVector.x).normalized
     }
     /**
-     *It rotates the node toward a point in a anticlock wise manner.
+     * It rotates the node toward a point in an anticlock wise manner.
      *  X
      *     O     =anticlockwise=>  X  0  Y
      *        Y
-     * @param center
+     * @param center center of the rotation (O in the example above)
      * @return the velocity that rotates the node accordingly
      */
     def anticlockwiseRotation(center : P) : Velocity = - clockwiseRotation(center)
@@ -61,8 +61,8 @@ trait BasicMovement_Lib {
   }
 
   /**
-   * Movement library built on top of Movement2D that enables some complicated behaviour.
-   * In this library, only the "explore" behaviour is defined.
+   * Movement library built on top of Movement2D that enables some complex behaviours.
+   * Currently, this library defines only the "explore" behaviour.
    */
   trait Steering {
     self : Movement2D with FieldCalculusSyntax with StandardSensors =>
@@ -77,8 +77,8 @@ trait BasicMovement_Lib {
      *      |_ _ _ _ _ _ (maxX, maxY=
      * @param minCoord the top left area limit
      * @param maxCoord the bottom right area limit
-     * @param trajectoryTime define for how the node maintains a direction.
-     * @param reachGoalRange the threshold to consider the node reached to a position
+     * @param trajectoryTime define how long the node maintains a direction.
+     * @param reachGoalRange the threshold to consider the position reached
      * @return the unit vector that brings the node to explore the area.
      */
     def explore(minCoord : P, maxCoord : P, trajectoryTime : Int, reachGoalRange : Double = 0) : Velocity = {
@@ -87,9 +87,9 @@ trait BasicMovement_Lib {
           minCoord.x + (math.random() * (maxCoord.x - minCoord.x)),
           minCoord.y + (math.random() * (maxCoord.y - minCoord.y)))
       val (_, _, velocity) = rep((randomCoord, trajectoryTime, Point3D.Zero)){
-        case (goal, decay, v) if (decay == 0) => (randomCoord, trajectoryTime, v)
-        case (goal, decay, v) if (goal.distance(currentPosition()) < reachGoalRange)=> (goal, 0, goToPoint(goal))
-        case (goal, decay, v) => (goal, decay - 1, goToPoint(goal))
+        case (_, decay, v) if (decay == 0) => (randomCoord, trajectoryTime, v)
+        case (goal, _, _) if (goal.distance(currentPosition()) < reachGoalRange)=> (goal, 0, goToPoint(goal))
+        case (goal, decay, _) => (goal, decay - 1, goToPoint(goal))
       }
       velocity
     }

@@ -8,7 +8,7 @@ import scala.util.Random
 object CommandLineSimulation extends App {
   object MyIncarnation extends BasicAbstractSpatialSimulationIncarnation
   import MyIncarnation._
-  val program = (new BasicMovement).asInstanceOf[AggregateInterpreter]
+  val program = (new ClockwiseMovement).asInstanceOf[AggregateInterpreter]
   /**
    * little world example. Elements are dispatch in a grid like these:
    * x - x - x

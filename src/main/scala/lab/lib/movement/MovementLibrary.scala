@@ -4,7 +4,7 @@ import it.unibo.scafi.incarnations.Incarnation
 import it.unibo.scafi.space.Point3D
 
 /**
- * An
+ * A collection of movement behaviours integrated with Aggregate Programming
  */
 trait MovementLibrary extends BasicMovement_Lib with Flock_Lib {
   self : Incarnation =>
@@ -16,7 +16,7 @@ trait MovementLibrary extends BasicMovement_Lib with Flock_Lib {
     def apply(x : Double, y : Double) : Velocity = new Velocity(x, y, 0)
   }
   /**
-   * device dependent, could produce a side effect. Each incarnation define how to move nodes actually.
+   * device dependent, it could produce a side effect. Each incarnation define how to move nodes actually.
    */
   trait MovementSupport {
     /**
