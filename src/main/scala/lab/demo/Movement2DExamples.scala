@@ -17,7 +17,7 @@ object MovementSimulation extends App {
   val width = 800 // simulated environment width
   val height = 600 // simulated environment height
   // -- aggregate program of simulation --
-  val programClass = classOf[LeaderStrategy]
+  val programClass = classOf[RescueDrone]
   // -- GUI parameters
   ViewSetting.labelFontSize = 5
   ViewSetting.windowConfiguration = WindowConfiguration(width, height) // WindowConfiguration() for a full screen panel
@@ -29,7 +29,7 @@ object MovementSimulation extends App {
       exportEvaluations = List.empty
     ),
     RadiusLikeSimulation(distance),
-    neighbourRender = false,
+    neighbourRender = true,
   ).launch()
 
 }
@@ -289,17 +289,14 @@ class RescueDrone extends Movement2DProgram with Movement2D with FlockLib with A
   with SensorFacade with BlockC with BlockS with BlockT {
   def isBase = sense3
   def isInjured = sense2
-
-  val thr = 25.0
-  val eatTime = 10
-  val grain = 10
+  val area = 10
 
   def seek(destination : P) : Velocity = withSeparation(goToPoint(destination) * 0.5)(10.0)
   def flee(destination : P) : Velocity = withSeparation(goToPoint(-destination) * 0.5)(separationDistance = 10.0)
 
   override def movementBody(): Movement2DIncarnation.Velocity = {
     def droneBehaviour(): Velocity = {
-      val leader = branch(isBase) { S(grain, nbrRange) } { false }
+      val leader = isBase
       val potential = distanceTo(leader, nbrRange)
       val collect = C[Double, P](potential, (acc, other) => mux(positionOrdering.gt(acc, other)) { acc } { other }, mux(isInjured) { currentPosition()} { Zero }, Zero )
       val injuredPosition = broadcast(leader, collect)
