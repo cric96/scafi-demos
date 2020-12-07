@@ -12,12 +12,12 @@ import lab.lib.movement.{Movement2DIncarnation, _}
 
 object MovementSimulation extends App {
   // -- simulation parameters --
-  val distance = 150 // the range to consider two nodes a neighbour
+  val distance = 150 // the range to consider two nodes as neighbours
   val howMany = 100 // nodes spawn in the simulation
   val width = 800 // simulated environment width
   val height = 600 // simulated environment height
   // -- aggregate program of simulation --
-  val programClass = classOf[RescueDrone]
+  val programClass = classOf[LeaderStrategy]
   // -- GUI parameters
   ViewSetting.labelFontSize = 5
   ViewSetting.windowConfiguration = WindowConfiguration(width, height) // WindowConfiguration() for a full screen panel
@@ -29,20 +29,20 @@ object MovementSimulation extends App {
       exportEvaluations = List.empty
     ),
     RadiusLikeSimulation(distance),
-    neighbourRender = true,
+    neighbourRender = false,
   ).launch()
 
 }
 /* utility to sense some "on-off" sensors*/
 trait SensorFacade {
   self :  Movement2DProgram =>
-  def sense1 = sense[Boolean]("sens1")
-  def sense2 = sense[Boolean]("sens2")
-  def sense3 = sense[Boolean]("sens3")
+  def sense1 : Boolean = sense("sens1")
+  def sense2 : Boolean  = sense("sens2")
+  def sense3 : Boolean = sense("sens3")
 }
 /// MOVEMENT EXAMPLES ///
 /*
-An example of how to enable the movement in ScaFi. The trait should extend Movement2DProgram and must define the velocity to apply at each node.
+An example of how to enable the movement in ScaFi. The trait should extend Movement2DProgram and must define the velocity to apply to each node.
 In this case, it returns a constant velocity (i.e. a field with (1.0, 1.0) in each point).
 */
 class ConstantMovement extends Movement2DProgram {
@@ -65,7 +65,7 @@ class Wander extends Movement2DProgram with Steering with Movement2D {
   override def movementBody(): Movement2DIncarnation.Velocity = explore(minBound, maxBound, 200)
 }
 /*
-  This example is similar to the above, but this uses withSeparation method. Doings this, the nodes try to avoid each other
+  This example is similar to previous one, but this uses withSeparation method. Doing this, the nodes try to avoid each other
  */
 class WanderWithSeparation extends Movement2DProgram with Steering with FlockLib with Movement2D {
   private val minBound : Point2D = Point2D(0.0, 0.0)
@@ -76,7 +76,7 @@ class WanderWithSeparation extends Movement2DProgram with Steering with FlockLib
   }(separationDistance = distanceBetween)
 }
 /*
-  This example shows the flocking behaviour of the swarm. Try to change forces to see how the overall behaviour change.
+  This example shows the swarm flocking behaviour. Try to change forces to see how the overall behaviour changes.
  */
 class FlockMovement extends Movement2DProgram with FlockLib {
   override def movementBody(): Movement2DIncarnation.Velocity = FlockBehaviour(
@@ -95,7 +95,7 @@ class Concatenation extends Movement2DProgram with Movement2D with FlockLib with
   private val goalWeight = 0.3
   private val obstacleWeight = 0.5
   private val target = Point2D(1000.0, 1000.0)
-  def obstacle = sense2
+  def obstacle : Boolean = sense2
   override def movementBody(): Movement2DIncarnation.Velocity = FlockBehaviour()
     .addBehaviour(anticlockwiseRotation(target) * rotationWeight) // via pimping AdvancedFlock, this tend to rotate toward the goal
     .withGoal(target, goalWeight) //this move the aggregate toward the target
@@ -104,8 +104,8 @@ class Concatenation extends Movement2DProgram with Movement2D with FlockLib with
 }
 /// MOVEMENT + AGGREGATE SYNTAX EXAMPLE ///
 /*
-  This example shows how to enable different movements in the same aggregate programs. You could use the SensorFacade to divide the field into different zones.
-  Pay attention to the use of mux or branch. Branching divides the nodes in two different zones that don't speak together.
+  This example shows how to enable different movements in the same aggregate program. You could use the SensorFacade to divide the field into different zones.
+  Pay attention to the use of mux or branch. Branching divides the nodes in two different zones that don't speak to each other.
   Try to use branch and see what happen.
   P.S.
   The method standStill returns the null velocity vector (Velocity(0,0)).
@@ -118,9 +118,9 @@ class MovementSelection extends Movement2DProgram with Movement2D with FlockLib 
   }
 }
 /*
-  This example shows how to mix the G block with movement. G can be used to broadcast data to the entire aggregate. The method broadcast internally uses G.
-  G, in this case, is used to find a part of the field in which sens1 is enabled. When sens1 is founded by someone, their position is broadcast to
-  the aggregate that tends to go in that position.
+  This example shows how to mix the G block with movement. G can be used to broadcast data to the entire aggregate. The method "broadcast" internally uses G.
+  G, in this case, is used to find a part of the field in which sens1 is enabled. When sens1 is found by someone, its position is broadcast to
+  the aggregate that then tends to reach that position.
  */
 class Coordination extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock
   with BlockG with SensorFacade  {
@@ -132,8 +132,8 @@ class Coordination extends Movement2DProgram with Movement2D with FlockLib with 
   }
 }
 /*
-  This example shows how to elect a leader and then stay near him. It is possible using the S block, allowing to divide the space into zones and
-  electing a leader.
+  This example shows how to elect a leader and then stay near him. It is possible using the S block, that allows to divide the space into zones and
+  to elect a leader.
   The result shows the creation of agglomerates near a node.
  */
 class LeaderElection extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock
@@ -147,8 +147,8 @@ class LeaderElection extends Movement2DProgram with Movement2D with FlockLib wit
 }
 /*
   This example shows how to use BlockT with movement.
-  In this case, when the sense1 field is enabled, for a period, the aggregate exhibit a flock behaviour.
-  After this period, the aggregate start to use antiflock behaviour. Try to use mux instead of branch.
+  In this case, when the sense1 field is enabled, for a period, the aggregate exhibits a flock behaviour.
+  After this period, the aggregate starts using the antiflock behaviour. Try to use mux instead of branch.
   What happens? It was an expected result?
  */
 class Temporal extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with BlockT
@@ -170,17 +170,17 @@ class Temporal extends Movement2DProgram with Movement2D with FlockLib with Adva
 /*
   This example combines the leader election strategy with the broadcast strategy. This is an example of the self-organising
    coordination regions (SCR) pattern.
-   (for all those are interested in this argument, a detailed explanation could be found here
+   (for those of you who are interested in this argument, a detailed explanation could be found here
    https://www.sciencedirect.com/science/article/pii/S0167739X20304775).
    The leader election is done as above. Then the data are collected into the leader with the Block C. In this example,
-   the leader receives a sequence of position marked with the identifier of the node.
-   After that, the leader computer the centroid of their region, and broadcast it to the entire region.
+   the leader receives a sequence of positions marked with the node identifier.
+   After that, the leader computes the centroid of its region and broadcast it to the entire zones.
    Then, the nodes rotate towards this centroid.
  */
 class LeaderStrategy extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock
-   with BlockG with BlockT with BlockS with BlockC with StateManagement {
-  val radius = 200
-  val separation = 10.0
+  with BlockG with BlockT with BlockS with BlockC with StateManagement {
+  private val radius = 200
+  private val separation = 10.0
   override def movementBody(): Movement2DIncarnation.Velocity = {
     val leader = S(radius, nbrRange)
     val slaveData = C[Double, Seq[P]](distanceTo(leader), _ ++ _, Seq(currentPosition()), Seq.empty)
@@ -190,13 +190,17 @@ class LeaderStrategy extends Movement2DProgram with Movement2D with FlockLib wit
   }
 }
 /// TASKS ///
-/* General tips: Try to solve the task with the simplest movement block (e.g. goToPosition, explore,..). When you have a solution,
-  integrate it with more advanced movement behaviour (flock, with separation...). */
+/**
+General tips: Try to solve the task with the simplest movement block (e.g. goToPosition, explore,..). When you have a solution,
+  integrate it with more advanced movement behaviour (flock, with separation...).
+ */
 /*
   TASK 1: find food
-  The nodes must search for the food node in space.
+  Nodes must search for the food node in the space.
   Once found, its position must be sent to all the nodes of the aggregate that will have to get closer to it.
-  A "food node" is a node with the sense3 enabled (type 3 on selection area).
+  A "food node" is a node with sense3 enabled (type 3 on selection area).
+  Try not to consider the "food node" as part of the aggregate, namely avoid to do something like this: broadcast(isFood, currentPosition).
+  The food node must be found by other "drone" via nbr operator.
   Tips: try to use the block G.
  */
 class FindFood extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
@@ -230,8 +234,8 @@ class FindFood extends Movement2DProgram with Movement2D with FlockLib with Adva
 
 /*
   TASK 2: find food and leave
-  like the above, but this time, when a node is near to the food, it remains in the position for a fixed period.
-  After this, the node should leave the position allowing other nodes to reach the food.
+  This is similar to the previous example, but this time, when a node is near to the food, it remains in that position for a fixed period.
+  After this period, the node should leave the target zone, allowing other nodes to reach the food.
   Tips: Try to use block T and branch operator.
  */
 class FindFoodAndLeave extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
@@ -278,11 +282,10 @@ class FindFoodAndLeave extends Movement2DProgram with Movement2D with FlockLib w
 }
 
 /*
-  TASK 3 rescue drone
-  Some nodes act as a base (sensor 3), to which drones notify if they have
-  a break (nodes with sensor 2 enabled). When the base receives the position of a
-  "broken" drone, it orders nearby drone to go to that position to "rescue" it (
-  i.e. they stay nearby the broken node).
+  TASK 3 drone rescue
+  Some nodes act as a base (sensor 3). Drones notify these bases whenever they have a break (nodes with sensor 2 enabled).
+  WHen the base receives the position of a "broken" drone, it orders nearby drones to go to that position to "rescue" it
+  (i.e. they stay nearby the broken node).
   Tips: try to adapt SCR pattern..
  */
 class RescueDrone extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
