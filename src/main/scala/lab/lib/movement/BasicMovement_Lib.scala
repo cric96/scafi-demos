@@ -87,8 +87,8 @@ trait BasicMovement_Lib {
           minCoord.x + (math.random() * (maxCoord.x - minCoord.x)),
           minCoord.y + (math.random() * (maxCoord.y - minCoord.y)))
       val (_, _, velocity) = rep((randomCoord, trajectoryTime, Point3D.Zero)){
-        case (_, decay, v) if (decay == 0) => (randomCoord, trajectoryTime, v)
-        case (goal, _, _) if (goal.distance(currentPosition()) < reachGoalRange)=> (goal, 0, goToPoint(goal))
+        case (_, decay, v) if decay == 0 => (randomCoord, trajectoryTime, v)
+        case (goal, _, _) if goal.distance(currentPosition()) < reachGoalRange => (goal, 0, goToPoint(goal))
         case (goal, decay, _) => (goal, decay - 1, goToPoint(goal))
       }
       velocity

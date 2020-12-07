@@ -2,12 +2,12 @@ package lab.gui.patch
 
 import it.unibo.scafi.simulation.MetaActionManager
 import it.unibo.scafi.simulation.MetaActionManager.MetaAction
-import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.{MetaActionProducer, SimulationExecutor, scafiSimulationExecutor}
+import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.{MetaActionProducer, SimulationExecutor}
 import it.unibo.scafi.space.Point3D
 
 class ActionMovement extends MetaActionProducer[(Double, Double)] {
 
-  private var action : (Any) => (Option[(Double,Double)]) = {
+  private var action : Any => Option[(Double,Double)] = {
     case p : Point3D => Some((p.x, p.y))
     case _ => None
   }

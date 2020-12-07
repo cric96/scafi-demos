@@ -36,9 +36,9 @@ object MovementSimulation extends App {
 /* utility to sense some "on-off" sensors*/
 trait SensorFacade {
   self :  Movement2DProgram =>
-  def sense1 = sense[Boolean]("sens1")
-  def sense2 = sense[Boolean]("sens2")
-  def sense3 = sense[Boolean]("sens3")
+  def sense1 : Boolean = sense("sens1")
+  def sense2 : Boolean  = sense("sens2")
+  def sense3 : Boolean = sense("sens3")
 }
 /// MOVEMENT EXAMPLES ///
 /*
@@ -95,7 +95,7 @@ class Concatenation extends Movement2DProgram with Movement2D with FlockLib with
   private val goalWeight = 0.3
   private val obstacleWeight = 0.5
   private val target = Point2D(1000.0, 1000.0)
-  def obstacle = sense2
+  def obstacle : Boolean = sense2
   override def movementBody(): Movement2DIncarnation.Velocity = FlockBehaviour()
     .addBehaviour(anticlockwiseRotation(target) * rotationWeight) // via pimping AdvancedFlock, this tend to rotate toward the goal
     .withGoal(target, goalWeight) //this move the aggregate toward the target
@@ -174,13 +174,13 @@ class Temporal extends Movement2DProgram with Movement2D with FlockLib with Adva
    https://www.sciencedirect.com/science/article/pii/S0167739X20304775).
    The leader election is done as above. Then the data are collected into the leader with the Block C. In this example,
    the leader receives a sequence of position marked with the identifier of the node.
-   After that, the leader computer the centroid of their region, and broadcast it to the entire region.
+   After that, the leader computer the centroid of its region and broadcast it to the entire zones.
    Then, the nodes rotate towards this centroid.
  */
 class LeaderStrategy extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock
    with BlockG with BlockT with BlockS with BlockC with StateManagement {
-  val radius = 200
-  val separation = 10.0
+  private val radius = 200
+  private val separation = 10.0
   override def movementBody(): Movement2DIncarnation.Velocity = {
     val leader = S(radius, nbrRange)
     val slaveData = C[Double, Seq[P]](distanceTo(leader), _ ++ _, Seq(currentPosition()), Seq.empty)
@@ -190,18 +190,22 @@ class LeaderStrategy extends Movement2DProgram with Movement2D with FlockLib wit
   }
 }
 /// TASKS ///
-/* General tips: Try to solve the task with the simplest movement block (e.g. goToPosition, explore,..). When you have a solution,
-  integrate it with more advanced movement behaviour (flock, with separation...). */
+/**
+  General tips: Try to solve the task with the simplest movement block (e.g. goToPosition, explore,..). When you have a solution,
+  integrate it with more advanced movement behaviour (flock, with separation...).
+*/
 /*
   TASK 1: find food
   The nodes must search for the food node in space.
   Once found, its position must be sent to all the nodes of the aggregate that will have to get closer to it.
   A "food node" is a node with the sense3 enabled (type 3 on selection area).
+  Try to treat the "food node" as not a part of the aggregate, namely avoid to do something like this broadcast(isFood, currentPosition).
+  The food node must be found by other "drone" via nbr operator.
   Tips: try to use the block G.
  */
 class FindFood extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
   with SensorFacade with BlockC with BlockS with BlockT {
-  def isFood : Boolean = sense3
+  private def isFood : Boolean = sense3
   override def movementBody(): Movement2DIncarnation.Velocity = {
     def droneBehaviour() : Velocity = Velocity.Zero //TODO
     val droneResult = droneBehaviour()
@@ -212,19 +216,17 @@ class FindFood extends Movement2DProgram with Movement2D with FlockLib with Adva
     }
   }
 }
-
 /*
   TASK 2: find food and leave
   like the above, but this time, when a node is near to the food, it remains in the position for a fixed period.
-  After this, the node should leave the position allowing other nodes to reach the food.
+  After this, the node should leave the target zone, allowing other nodes to reach the food.
   Tips: Try to use block T and branch operator.
  */
 class FindFoodAndLeave extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
   with SensorFacade with BlockC with BlockS with BlockT {
-  def isFood : Boolean = sense3
+  private def isFood : Boolean = sense3
   private val thr = 25.0 //the distance needed to "eat" the food
   private val eatTime = 10 //the time needed to consume the food
-
   override def movementBody(): Movement2DIncarnation.Velocity = {
     def droneBehaviour(): Velocity = Velocity.Zero //TODO
     val droneResult = droneBehaviour()
@@ -235,9 +237,8 @@ class FindFoodAndLeave extends Movement2DProgram with Movement2D with FlockLib w
     }
   }
 }
-
 /*
-  TASK 3 rescue drone
+  TASK 3 drone rescue
   Some nodes act as a base (sensor 3), to which drones notify if they have
   a break (nodes with sensor 2 enabled). When the base receives the position of a
   "broken" drone, it orders nearby drone to go to that position to "rescue" it (
@@ -246,8 +247,8 @@ class FindFoodAndLeave extends Movement2DProgram with Movement2D with FlockLib w
  */
 class RescueDrone extends Movement2DProgram with Movement2D with FlockLib with AdvancedFlock with Steering
   with SensorFacade with BlockC with BlockS with BlockT {
-  def isBase : Boolean = sense3
-  def isInjured : Boolean = sense2
+  private def isBase : Boolean = sense3
+  private def isInjured : Boolean = sense2
   override def movementBody(): Movement2DIncarnation.Velocity = {
     def droneBehaviour(): Velocity = Velocity.Zero //TODO
     val droneResult = droneBehaviour()

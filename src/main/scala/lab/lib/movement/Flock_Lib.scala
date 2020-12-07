@@ -65,7 +65,7 @@ trait Flock_Lib {
      * @param selector the boolean field in which the separation behaviour should happen
      * @param velocity the desired velocity field
      * @param separationDistance the target distance between each node.
-     * @return a unit vector based on velocity evalutaiton and separation distance.
+     * @return a unit vector based on velocity evaluation and separation distance.
      */
     def withSeparation(selector : => Boolean)(velocity: => Velocity)(separationDistance: Double) : Velocity = {
       mux[Velocity](selector) {
