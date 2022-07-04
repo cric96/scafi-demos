@@ -1,10 +1,10 @@
 package lab.demo
 
 import it.unibo.scafi.incarnations.BasicAbstractIncarnation
+import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.ScafiSimulationInitializer.RadiusSimulation
 import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.SimulationInfo
 import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.configuration.ScafiProgramBuilder
 import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.world.ScafiWorldInitializer.Random
-import lab.gui.patch.RadiusLikeSimulation
 
 object Incarnation extends BasicAbstractIncarnation
 import lab.demo.Incarnation._ //import all stuff from an incarnation
@@ -17,7 +17,7 @@ object Simulation extends App {
   ScafiProgramBuilder (
     Random(nodes, width, height),
     SimulationInfo(programClass),
-    RadiusLikeSimulation(neighbourRange),
+    RadiusSimulation(neighbourRange),
     neighbourRender = true,
   ).launch()
 }

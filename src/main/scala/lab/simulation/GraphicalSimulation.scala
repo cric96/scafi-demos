@@ -1,11 +1,12 @@
 package lab.simulation
 
-import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.SimulationInfo
+import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.ScafiSimulationInitializer.RadiusSimulation
+import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.{MetaActionProducer, SimulationInfo}
 import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.configuration.ScafiProgramBuilder
 import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.world.ScafiWorldInitializer.Grid
 import it.unibo.scafi.simulation.s2.frontend.view.ViewSetting
 import lab.demo._
-import lab.gui.patch.{ActionMovement, RadiusLikeSimulation}
+import lab.gui.lab.gui.patch.PotentialFieldMovements
 
 object GraphicalSimulation extends App {
   val distance = 40
@@ -15,7 +16,7 @@ object GraphicalSimulation extends App {
   val programClass = classOf[Main1]
 
   val movementSimulation = SimulationInfo(program = programClass,
-    metaActions = new ActionMovement :: Nil,
+    metaActions = PotentialFieldMovements() :: Nil,
     exportEvaluations = List.empty
   )
 
@@ -25,7 +26,7 @@ object GraphicalSimulation extends App {
   ScafiProgramBuilder (
     Grid(distance, rows, cols),
     textSimulation,
-    RadiusLikeSimulation(distance),
+    RadiusSimulation(radius = distance),
     neighbourRender = true,
   ).launch()
 

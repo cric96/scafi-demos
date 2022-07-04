@@ -1,12 +1,13 @@
 package lab.demo
 
-import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.SimulationInfo
+import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.ScafiSimulationInitializer.RadiusSimulation
+import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.bridge.{MetaActionProducer, SimulationInfo}
 import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.configuration.ScafiProgramBuilder
 import it.unibo.scafi.simulation.s2.frontend.incarnation.scafi.world.ScafiWorldInitializer.Random
 import it.unibo.scafi.simulation.s2.frontend.view.{ViewSetting, WindowConfiguration}
 import it.unibo.scafi.space.Point2D
 import it.unibo.scafi.space.Point3D.Zero
-import lab.gui.patch.{ActionMovement, RadiusLikeSimulation}
+import lab.gui.lab.gui.patch.PotentialFieldMovements
 import lab.lib.movement.Movement2DIncarnation._
 import lab.lib.movement.{Movement2DIncarnation, _}
 
@@ -17,7 +18,7 @@ object MovementSimulation extends App {
   val width = 800 // simulated environment width
   val height = 600 // simulated environment height
   // -- aggregate program of simulation --
-  val programClass = classOf[LeaderStrategy]
+  val programClass = classOf[RescueDrone]
   // -- GUI parameters
   ViewSetting.labelFontSize = 5
   ViewSetting.windowConfiguration = WindowConfiguration(width, height) // WindowConfiguration() for a full screen panel
@@ -25,10 +26,10 @@ object MovementSimulation extends App {
   ScafiProgramBuilder (
     Random(howMany, width, height),
     SimulationInfo(program = programClass,
-      metaActions = new ActionMovement :: Nil,
+      metaActions = PotentialFieldMovements() :: Nil,
       exportEvaluations = List.empty
     ),
-    RadiusLikeSimulation(distance),
+    RadiusSimulation(distance),
     neighbourRender = false,
   ).launch()
 
